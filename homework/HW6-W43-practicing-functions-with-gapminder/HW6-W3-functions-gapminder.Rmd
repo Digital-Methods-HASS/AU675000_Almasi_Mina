@@ -1,0 +1,109 @@
+---
+title: "HW6-W43-functions-gapminder"
+author: "Mina Almasi"
+date: '2022-10-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting up
+```{r}
+library(gapminder)
+```
+
+```{r}
+data <- gapminder
+```
+
+## Exercise 1: Writing a Defensive Function
+Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. You can use the population and GDPpercapita columns for it. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.
+```{r}
+gdp_calculator <- function(data, year, country) {
+  if(any(data$year==year) & any(data$country==country)) {  #if chosen country & year exists, GDP is calculated
+    data <- data[data$year %in% year, ] #subset years that are chosen as parameters 
+    data <- data[data$country %in% country, ] #subset the countries that are chosen as parameters
+    
+    #calculating GDP
+    gdp <- data$pop * data$gdpPercap
+    
+    #formatting it nicely
+    format_data <- cbind(country, gdp=gdp)
+    
+    return(format_data)
+  }
+  else if(any(data$year!=year)) { #if chosen years are missing, error message is given
+    print("YEAR MISSING: chosen years do not match years in data")
+  }
+  else { #if chosen countries are missing, error message is given
+    print("COUNTRY MISSING: No data from this country is present")
+  }
+}
+```
+
+With the function that is defined, we calculate try to calculate the years 1967, 1977, 1987, 1997, 2007, and 2017.
+```{r}
+gdp_calculator(gapminder, year=1967, country = "Denmark")
+```
+
+```{r}
+gdp_calculator(gapminder, year=1977, country = "Denmark")
+```
+
+```{r}
+gdp_calculator(gapminder, year=1987, country = "Denmark")
+```
+
+```{r}
+gdp_calculator(gapminder, year=1997, country = "Denmark")
+```
+
+```{r}
+gdp_calculator(gapminder, year=2007, country = "Denmark")
+```
+
+```{r}
+gdp_calculator(gapminder, year=2017, country = "Denmark")
+```
+
+## Exercise 2: Script 
+Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and prints out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70. (Hint: remember the grepl function, and review the Control Flow tutorial)
+```{r}
+library(tidyverse)
+B_countries = grep("^B", unique(gapminder$country), value = TRUE)
+threshold_min = 50 
+threshold_max = 70
+all_countries = unique(data$country)
+
+for(country_i in all_countries) {
+  temp = data %>% filter(gapminder$country == country_i)
+  mean_lifeEXP = round(mean(temp$lifeExp), 2)
+
+  #check whether b is start
+  if (country_i %in% B_countries){
+    b_start = "the country starts with B"
+  }
+  else {
+    b_start = "the country does not start with B"
+  }
+  
+  # check whether mean is less than 50, greater than 50, between 50 and 70
+  if (mean_lifeEXP < threshold_min) {
+    mean_message = "less than 50"
+  }
+  if (mean_lifeEXP > threshold_min & mean_lifeEXP < threshold_max){
+    mean_message = "between 50 and 70"
+  }
+  if (mean_lifeEXP > threshold_max) {
+    mean_message = "greater than 70"
+  }
+  
+  output = paste0(country_i, " has a mean life expectancy that is ", mean_message, " and ", b_start)
+  
+  print(output)
+}
+```
+
+
