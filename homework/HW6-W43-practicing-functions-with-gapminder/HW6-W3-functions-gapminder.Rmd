@@ -21,6 +21,8 @@ data <- gapminder
 
 ## Exercise 1: Writing a Defensive Function
 Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. You can use the population and GDPpercapita columns for it. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.
+
+We define the following function: 
 ```{r}
 gdp_calculator <- function(data, year, country) {
   
@@ -44,19 +46,20 @@ for (i in 1:length(years)){
 }
 ```
 
+As seen from the function output, the function calculates the GDP for Denmark all years except the last (2017) where it reports an error as the year does not exist. 
 
-## Exercise 2: Script 
+## Exercise 2: Script - Testing whether countries start with B and calculating mean life expectancy
 Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and prints out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70. (Hint: remember the grepl function, and review the Control Flow tutorial)
 
-Assuming that we are meant to test only (and not filter upon) countries starting with B !! The loop will thus print all countries but denote whether it starts with B or not. 
+Assuming that we are meant to test only (and not filter upon) countries starting with B, the for loop below is made. The loop prints all countries and their mean expectancy and denotes whether the country starts with B or not. 
 ```{r}
-# defining B-countries 
+# make list of all countries starting with B
 B_countries = grep("^B", unique(gapminder$country), value = TRUE)
 
 # list of all unique countries in the data
 all_countries = unique(data$country)
 
-#starting loop 
+#starting for loop, iterate over all (unique) countries 
 for(country_i in all_countries) {
   temp = data %>% filter(gapminder$country == country_i) #temp data with only the country in the loop (country_i)
   mean_lifeEXP = round(mean(temp$lifeExp), 2) #calculate the mean life expectancy for country_i
@@ -80,10 +83,13 @@ for(country_i in all_countries) {
     mean_message = "greater than 70"
   }
   
-  output = paste0(country_i, " has a mean life expectancy that is ", mean_message, " and ", b_start)
+  #create output 
+  output = paste0(country_i, " has a mean life expectancy that is ", mean_message, ", and ", b_start)
   
+  #print output
   print(output)
 }
 ```
+
 
 
