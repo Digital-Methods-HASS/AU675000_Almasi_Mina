@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Setting up
 ```{r}
 library(gapminder)
+library(tidyverse)
 ```
 
 ```{r}
@@ -22,81 +23,60 @@ data <- gapminder
 Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. You can use the population and GDPpercapita columns for it. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.
 ```{r}
 gdp_calculator <- function(data, year, country) {
-  if(any(data$year==year) & any(data$country==country)) {  #if chosen country & year exists, GDP is calculated
-    data <- data[data$year %in% year, ] #subset years that are chosen as parameters 
-    data <- data[data$country %in% country, ] #subset the countries that are chosen as parameters
-    
-    #calculating GDP
-    gdp <- data$pop * data$gdpPercap
-    
-    #formatting it nicely
-    format_data <- cbind(country, gdp=gdp)
-    
-    return(format_data)
-  }
-  else if(any(data$year!=year)) { #if chosen years are missing, error message is given
-    print("YEAR MISSING: chosen years do not match years in data")
-  }
-  else { #if chosen countries are missing, error message is given
-    print("COUNTRY MISSING: No data from this country is present")
-  }
+  
+  # selecting relevant row in data 
+  data <- data[which(data$country == country & data$year == year), ]
+  
+  #calculating gdp 
+  gdp <- round(data$pop * data$gdpPercap)
+  
+  # printing GDP if row exists (if there is a row i.e., a country and a year, then it will print the GDP)
+  ifelse(nrow(data) == 1, paste(country, "has a GDP of", gdp, "in international dollars"), "MISSING VALUE: COUNTRY OR YEAR")
 }
 ```
 
 With the function that is defined, we calculate try to calculate the years 1967, 1977, 1987, 1997, 2007, and 2017.
 ```{r}
-gdp_calculator(gapminder, year=1967, country = "Denmark")
+years <- c(1967, 1977, 1987, 1997, 2007, 2017)
+
+for (i in 1:length(years)){
+  print(gdp_calculator(gapminder, year = years[i], country = "Denmark"))
+}
 ```
 
-```{r}
-gdp_calculator(gapminder, year=1977, country = "Denmark")
-```
-
-```{r}
-gdp_calculator(gapminder, year=1987, country = "Denmark")
-```
-
-```{r}
-gdp_calculator(gapminder, year=1997, country = "Denmark")
-```
-
-```{r}
-gdp_calculator(gapminder, year=2007, country = "Denmark")
-```
-
-```{r}
-gdp_calculator(gapminder, year=2017, country = "Denmark")
-```
 
 ## Exercise 2: Script 
 Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and prints out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70. (Hint: remember the grepl function, and review the Control Flow tutorial)
+
+Assuming that we are meant to test only (and not filter upon) countries starting with B !! The loop will thus print all countries but denote whether it starts with B or not. 
 ```{r}
-library(tidyverse)
+# defining B-countries 
 B_countries = grep("^B", unique(gapminder$country), value = TRUE)
-threshold_min = 50 
-threshold_max = 70
+
+# list of all unique countries in the data
 all_countries = unique(data$country)
 
+#starting loop 
 for(country_i in all_countries) {
-  temp = data %>% filter(gapminder$country == country_i)
-  mean_lifeEXP = round(mean(temp$lifeExp), 2)
+  temp = data %>% filter(gapminder$country == country_i) #temp data with only the country in the loop (country_i)
+  mean_lifeEXP = round(mean(temp$lifeExp), 2) #calculate the mean life expectancy for country_i
 
-  #check whether b is start
+  #check whether b is the start letter
   if (country_i %in% B_countries){
     b_start = "the country starts with B"
   }
   else {
-    b_start = "the country does not start with B"
+    b_start = "the country does NOT start with B"
   }
   
   # check whether mean is less than 50, greater than 50, between 50 and 70
-  if (mean_lifeEXP < threshold_min) {
+  if (mean_lifeEXP < 50) {
     mean_message = "less than 50"
   }
-  if (mean_lifeEXP > threshold_min & mean_lifeEXP < threshold_max){
+  if (mean_lifeEXP > 50 & mean_lifeEXP < 70){
     mean_message = "between 50 and 70"
   }
-  if (mean_lifeEXP > threshold_max) {
+  if (mean_lifeEXP > 70) {
     mean_message = "greater than 70"
   }
   

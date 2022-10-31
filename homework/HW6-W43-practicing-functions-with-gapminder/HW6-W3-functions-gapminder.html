@@ -372,7 +372,17 @@ pre code {
 
 <div id="setting-up" class="section level2">
 <h2>Setting up</h2>
-<pre class="r"><code>library(gapminder)</code></pre>
+<pre class="r"><code>library(gapminder)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
+## ✔ tidyr   1.2.0     ✔ stringr 1.4.0
+## ✔ readr   2.1.2     ✔ forcats 0.5.2</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>data &lt;- gapminder</code></pre>
 </div>
 <div id="exercise-1-writing-a-defensive-function" class="section level2">
@@ -383,44 +393,29 @@ You can use the population and GDPpercapita columns for it. Using that
 function, calculate the GDP of Denmark in the following years: 1967,
 1977, 1987, 1997, 2007, and 2017.</p>
 <pre class="r"><code>gdp_calculator &lt;- function(data, year, country) {
-  if(any(data$year==year) &amp; any(data$country==country)) {  #if chosen country &amp; year exists, GDP is calculated
-    data &lt;- data[data$year %in% year, ] #subset years that are chosen as parameters 
-    data &lt;- data[data$country %in% country, ] #subset the countries that are chosen as parameters
-    
-    #calculating GDP
-    gdp &lt;- data$pop * data$gdpPercap
-    
-    #formatting it nicely
-    format_data &lt;- cbind(country, gdp=gdp)
-    
-    return(format_data)
-  }
-  else if(any(data$year!=year)) { #if chosen years are missing, error message is given
-    print(&quot;YEAR MISSING: chosen years do not match years in data&quot;)
-  }
-  else { #if chosen countries are missing, error message is given
-    print(&quot;COUNTRY MISSING: No data from this country is present&quot;)
-  }
+  
+  # selecting relevant row in data 
+  data &lt;- data[which(data$country == country &amp; data$year == year), ]
+  
+  #calculating gdp 
+  gdp &lt;- round(data$pop * data$gdpPercap)
+  
+  # printing GDP if row exists (if there is a row i.e., a country and a year, then it will print the GDP)
+  ifelse(nrow(data) == 1, paste(country, &quot;has a GDP of&quot;, gdp, &quot;in international dollars&quot;), &quot;MISSING VALUE: COUNTRY OR YEAR&quot;)
 }</code></pre>
 <p>With the function that is defined, we calculate try to calculate the
 years 1967, 1977, 1987, 1997, 2007, and 2017.</p>
-<pre class="r"><code>gdp_calculator(gapminder, year=1967, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>##      country   gdp              
-## [1,] &quot;Denmark&quot; &quot;77116977699.724&quot;</code></pre>
-<pre class="r"><code>gdp_calculator(gapminder, year=1977, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>##      country   gdp               
-## [1,] &quot;Denmark&quot; &quot;103920280027.729&quot;</code></pre>
-<pre class="r"><code>gdp_calculator(gapminder, year=1987, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>##      country   gdp               
-## [1,] &quot;Denmark&quot; &quot;128771236166.089&quot;</code></pre>
-<pre class="r"><code>gdp_calculator(gapminder, year=1997, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>##      country   gdp               
-## [1,] &quot;Denmark&quot; &quot;157476118455.789&quot;</code></pre>
-<pre class="r"><code>gdp_calculator(gapminder, year=2007, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>##      country   gdp               
-## [1,] &quot;Denmark&quot; &quot;192906627080.569&quot;</code></pre>
-<pre class="r"><code>gdp_calculator(gapminder, year=2017, country = &quot;Denmark&quot;)</code></pre>
-<pre><code>## [1] &quot;YEAR MISSING: chosen years do not match years in data&quot;</code></pre>
+<pre class="r"><code>years &lt;- c(1967, 1977, 1987, 1997, 2007, 2017)
+
+for (i in 1:length(years)){
+  print(gdp_calculator(gapminder, year = years[i], country = &quot;Denmark&quot;))
+}</code></pre>
+<pre><code>## [1] &quot;Denmark has a GDP of 77116977700 in international dollars&quot;
+## [1] &quot;Denmark has a GDP of 103920280028 in international dollars&quot;
+## [1] &quot;Denmark has a GDP of 128771236166 in international dollars&quot;
+## [1] &quot;Denmark has a GDP of 157476118456 in international dollars&quot;
+## [1] &quot;Denmark has a GDP of 192906627081 in international dollars&quot;
+## [1] &quot;MISSING VALUE: COUNTRY OR YEAR&quot;</code></pre>
 </div>
 <div id="exercise-2-script" class="section level2">
 <h2>Exercise 2: Script</h2>
@@ -429,41 +424,36 @@ tests whether the country starts with a ‘B’ , and prints out whether the
 life expectancy is smaller than 50, between 50 and 70, or greater than
 70. (Hint: remember the grepl function, and review the Control Flow
 tutorial)</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──✔ ggplot2 3.3.6     ✔ purrr   0.3.4
-## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
-## ✔ tidyr   1.2.0     ✔ stringr 1.4.0
-## ✔ readr   2.1.2     ✔ forcats 0.5.2</code></pre>
-<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>B_countries = grep(&quot;^B&quot;, unique(gapminder$country), value = TRUE)
-threshold_min = 50 
-threshold_max = 70
+<p>Assuming that we are meant to test only (and not filter upon)
+countries starting with B !! The loop will thus print all countries but
+denote whether it starts with B or not.</p>
+<pre class="r"><code># defining B-countries 
+B_countries = grep(&quot;^B&quot;, unique(gapminder$country), value = TRUE)
+
+# list of all unique countries in the data
 all_countries = unique(data$country)
 
+#starting loop 
 for(country_i in all_countries) {
-  temp = data %&gt;% filter(gapminder$country == country_i)
-  mean_lifeEXP = round(mean(temp$lifeExp), 2)
+  temp = data %&gt;% filter(gapminder$country == country_i) #temp data with only the country in the loop (country_i)
+  mean_lifeEXP = round(mean(temp$lifeExp), 2) #calculate the mean life expectancy for country_i
 
-  #check whether b is start
+  #check whether b is the start letter
   if (country_i %in% B_countries){
     b_start = &quot;the country starts with B&quot;
   }
   else {
-    b_start = &quot;the country does not start with B&quot;
+    b_start = &quot;the country does NOT start with B&quot;
   }
   
   # check whether mean is less than 50, greater than 50, between 50 and 70
-  if (mean_lifeEXP &lt; threshold_min) {
+  if (mean_lifeEXP &lt; 50) {
     mean_message = &quot;less than 50&quot;
   }
-  if (mean_lifeEXP &gt; threshold_min &amp; mean_lifeEXP &lt; threshold_max){
+  if (mean_lifeEXP &gt; 50 &amp; mean_lifeEXP &lt; 70){
     mean_message = &quot;between 50 and 70&quot;
   }
-  if (mean_lifeEXP &gt; threshold_max) {
+  if (mean_lifeEXP &gt; 70) {
     mean_message = &quot;greater than 70&quot;
   }
   
@@ -471,13 +461,13 @@ for(country_i in all_countries) {
   
   print(output)
 }</code></pre>
-<pre><code>## [1] &quot;Afghanistan has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Albania has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Algeria has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Angola has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Argentina has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Australia has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Austria has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
+<pre><code>## [1] &quot;Afghanistan has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Albania has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Algeria has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Angola has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Argentina has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Australia has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Austria has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
 ## [1] &quot;Bahrain has a mean life expectancy that is between 50 and 70 and the country starts with B&quot;
 ## [1] &quot;Bangladesh has a mean life expectancy that is less than 50 and the country starts with B&quot;
 ## [1] &quot;Belgium has a mean life expectancy that is greater than 70 and the country starts with B&quot;
@@ -489,130 +479,130 @@ for(country_i in all_countries) {
 ## [1] &quot;Bulgaria has a mean life expectancy that is between 50 and 70 and the country starts with B&quot;
 ## [1] &quot;Burkina Faso has a mean life expectancy that is less than 50 and the country starts with B&quot;
 ## [1] &quot;Burundi has a mean life expectancy that is less than 50 and the country starts with B&quot;
-## [1] &quot;Cambodia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Cameroon has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Canada has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Central African Republic has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Chad has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Chile has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;China has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Colombia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Comoros has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Congo, Dem. Rep. has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Congo, Rep. has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Costa Rica has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Cote d&#39;Ivoire has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Croatia has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Cuba has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Czech Republic has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Denmark has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Djibouti has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Dominican Republic has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Ecuador has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Egypt has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;El Salvador has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Equatorial Guinea has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Eritrea has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Ethiopia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Finland has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;France has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Gabon has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Gambia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Germany has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Ghana has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Greece has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Guatemala has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Guinea has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Guinea-Bissau has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Haiti has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Honduras has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Hong Kong, China has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Hungary has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Iceland has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;India has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Indonesia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Iran has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Iraq has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Ireland has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Israel has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Italy has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Jamaica has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Japan has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Jordan has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Kenya has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Korea, Dem. Rep. has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Korea, Rep. has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Kuwait has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Lebanon has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Lesotho has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Liberia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Libya has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Madagascar has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Malawi has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Malaysia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Mali has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Mauritania has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Mauritius has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Mexico has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Mongolia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Montenegro has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Morocco has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Mozambique has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Myanmar has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Namibia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Nepal has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Netherlands has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;New Zealand has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Nicaragua has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Niger has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Nigeria has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Norway has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Oman has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Pakistan has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Panama has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Paraguay has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Peru has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Philippines has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Poland has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Portugal has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Puerto Rico has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Reunion has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Romania has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Rwanda has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Sao Tome and Principe has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Saudi Arabia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Senegal has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Serbia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Sierra Leone has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Singapore has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Slovak Republic has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Slovenia has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Somalia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;South Africa has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Spain has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Sri Lanka has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Sudan has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Swaziland has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Sweden has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Switzerland has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Syria has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Taiwan has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Tanzania has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Thailand has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Togo has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Trinidad and Tobago has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Tunisia has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Turkey has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Uganda has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;United Kingdom has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;United States has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Uruguay has a mean life expectancy that is greater than 70 and the country does not start with B&quot;
-## [1] &quot;Venezuela has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Vietnam has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;West Bank and Gaza has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;
-## [1] &quot;Yemen, Rep. has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Zambia has a mean life expectancy that is less than 50 and the country does not start with B&quot;
-## [1] &quot;Zimbabwe has a mean life expectancy that is between 50 and 70 and the country does not start with B&quot;</code></pre>
+## [1] &quot;Cambodia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Cameroon has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Canada has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Central African Republic has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Chad has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Chile has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;China has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Colombia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Comoros has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Congo, Dem. Rep. has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Congo, Rep. has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Costa Rica has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Cote d&#39;Ivoire has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Croatia has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Cuba has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Czech Republic has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Denmark has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Djibouti has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Dominican Republic has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Ecuador has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Egypt has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;El Salvador has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Equatorial Guinea has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Eritrea has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Ethiopia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Finland has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;France has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Gabon has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Gambia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Germany has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Ghana has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Greece has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Guatemala has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Guinea has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Guinea-Bissau has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Haiti has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Honduras has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Hong Kong, China has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Hungary has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Iceland has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;India has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Indonesia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Iran has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Iraq has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Ireland has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Israel has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Italy has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Jamaica has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Japan has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Jordan has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Kenya has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Korea, Dem. Rep. has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Korea, Rep. has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Kuwait has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Lebanon has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Lesotho has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Liberia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Libya has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Madagascar has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Malawi has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Malaysia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Mali has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Mauritania has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Mauritius has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Mexico has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Mongolia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Montenegro has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Morocco has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Mozambique has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Myanmar has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Namibia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Nepal has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Netherlands has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;New Zealand has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Nicaragua has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Niger has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Nigeria has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Norway has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Oman has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Pakistan has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Panama has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Paraguay has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Peru has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Philippines has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Poland has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Portugal has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Puerto Rico has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Reunion has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Romania has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Rwanda has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Sao Tome and Principe has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Saudi Arabia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Senegal has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Serbia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Sierra Leone has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Singapore has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Slovak Republic has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Slovenia has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Somalia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;South Africa has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Spain has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Sri Lanka has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Sudan has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Swaziland has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Sweden has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Switzerland has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Syria has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Taiwan has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Tanzania has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Thailand has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Togo has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Trinidad and Tobago has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Tunisia has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Turkey has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Uganda has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;United Kingdom has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;United States has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Uruguay has a mean life expectancy that is greater than 70 and the country does NOT start with B&quot;
+## [1] &quot;Venezuela has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Vietnam has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;West Bank and Gaza has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;
+## [1] &quot;Yemen, Rep. has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Zambia has a mean life expectancy that is less than 50 and the country does NOT start with B&quot;
+## [1] &quot;Zimbabwe has a mean life expectancy that is between 50 and 70 and the country does NOT start with B&quot;</code></pre>
 </div>
 
 
