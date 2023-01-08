@@ -1,0 +1,95 @@
+---
+title: "HW6-W43-functions-gapminder"
+author: "Mina Almasi"
+date: '2022-10-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting up
+```{r}
+library(gapminder)
+library(tidyverse)
+```
+
+```{r}
+data <- gapminder
+```
+
+## Exercise 1: Writing a Defensive Function
+Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. You can use the population and GDPpercapita columns for it. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.
+
+We define the following function: 
+```{r}
+gdp_calculator <- function(data, year, country) {
+  
+  # selecting relevant row in data 
+  data <- data[which(data$country == country & data$year == year), ]
+  
+  #calculating gdp 
+  gdp <- round(data$pop * data$gdpPercap)
+  
+  # printing GDP if row exists (if there is a row i.e., a country and a year, then it will print the GDP)
+  ifelse(nrow(data) == 1, paste(country, "has a GDP of", gdp, "in international dollars"), "MISSING VALUE: COUNTRY OR YEAR")
+}
+```
+
+With the function that is defined, we calculate try to calculate the years 1967, 1977, 1987, 1997, 2007, and 2017.
+```{r}
+years <- c(1967, 1977, 1987, 1997, 2007, 2017)
+
+for (i in 1:length(years)){
+  print(gdp_calculator(gapminder, year = years[i], country = "Denmark"))
+}
+```
+
+As seen from the function output, the function calculates the GDP for Denmark all years except the last (2017) where it reports an error as the year does not exist. 
+
+## Exercise 2: Script - Testing whether countries start with B and calculating mean life expectancy
+Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and prints out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70. (Hint: remember the grepl function, and review the Control Flow tutorial)
+
+Assuming that we are meant to test only (and not filter upon) countries starting with B, the for loop below is made. The loop prints all countries and their mean expectancy and denotes whether the country starts with B or not. 
+```{r}
+# make list of all countries starting with B
+B_countries = grep("^B", unique(gapminder$country), value = TRUE)
+
+# list of all unique countries in the data
+all_countries = unique(data$country)
+
+#starting for loop, iterate over all (unique) countries 
+for(country_i in all_countries) {
+  temp = data %>% filter(gapminder$country == country_i) #temp data with only the country in the loop (country_i)
+  mean_lifeEXP = round(mean(temp$lifeExp), 2) #calculate the mean life expectancy for country_i
+
+  #check whether b is the start letter
+  if (country_i %in% B_countries){
+    b_start = "the country starts with B"
+  }
+  else {
+    b_start = "the country does NOT start with B"
+  }
+  
+  # check whether mean is less than 50, greater than 50, between 50 and 70
+  if (mean_lifeEXP < 50) {
+    mean_message = "less than 50"
+  }
+  if (mean_lifeEXP > 50 & mean_lifeEXP < 70){
+    mean_message = "between 50 and 70"
+  }
+  if (mean_lifeEXP > 70) {
+    mean_message = "greater than 70"
+  }
+  
+  #create output 
+  output = paste0(country_i, " has a mean life expectancy that is ", mean_message, ", and ", b_start)
+  
+  #print output
+  print(output)
+}
+```
+
+
+
